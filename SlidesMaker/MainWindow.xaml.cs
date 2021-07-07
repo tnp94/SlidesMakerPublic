@@ -117,7 +117,7 @@ namespace SlidesMaker
             List<Image> imageList = new List<Image>();
 
             // Using documentation from https://docs.microsoft.com/en-us/azure/cognitive-services/bing-image-search/quickstarts/csharp
-            string subscriptionKey = "{API Key Removed}";
+            string subscriptionKey = "147b9cdd8a8f422bb9296a23bef6ca8b";
             string uri = "https://api.bing.microsoft.com/v7.0/images/search";
             string searchTerm = string.Join(" ", keywords);
             var uriQuery = uri + "?q=" + Uri.EscapeDataString(searchTerm);
@@ -144,6 +144,25 @@ namespace SlidesMaker
             }
 
         }
+
+        private void clearReferences(PowerPoint.Presentation presentation)
+        {
+            this.pptApp = null;
+            this.presentation = null;
+        }
+
+
+        private void openPowerpoint()
+        {
+            if (this.pptApp == null)
+            {
+                PowerPoint.Application newPptApp = new PowerPoint.Application();
+                this.pptApp = newPptApp;
+                this.pptApp.PresentationClose += clearReferences;
+                PowerPoint.Presentation newPresentation = pptApp.Presentations.Add(Microsoft.Office.Core.MsoTriState.msoTrue);
+                this.presentation = newPresentation;
+            }
+        }
         private void createSlide(string title, string content, List<Image> images)
         {
             /* If there is no PowerPoint application open, opens PowerPoint. 
@@ -168,21 +187,12 @@ namespace SlidesMaker
             int contentXOffset = pictureWidth * picturesPerLine;
             int contentYOffset = titleHeight + titleYOffset;
 
-            if (this.pptApp == null)
-            {
-                PowerPoint.Application newPptApp = new PowerPoint.Application();
-                this.pptApp = newPptApp;
-            }
-            if (this.presentation == null)
-            {
-                PowerPoint.Presentation newPresentation = pptApp.Presentations.Add(Microsoft.Office.Core.MsoTriState.msoTrue);
-                this.presentation = newPresentation;
-            }
+            openPowerpoint();
 
             PowerPoint.CustomLayout layout;
             try
             {
-                layout = presentation.SlideMaster.CustomLayouts[1];
+                layout = this.presentation.SlideMaster.CustomLayouts[1];
                 PowerPoint.Slides slides = presentation.Slides;
                 PowerPoint.Slide slide = slides.AddSlide(1, layout);
 
